@@ -1,0 +1,10 @@
+Lua hacked port for the Milkymist board, move to  src/ and just type:
+
+ make rtems
+ lm32-rtems4.11-objcopy -Obinary luam
+ ~/milkymist/tools/flterm --port /dev/ttyUSB0 --kernel luam
+
+Enjoy,
+
+Cristian Paul Peñaranda Rojas
+ paul at kristianpaul dot org

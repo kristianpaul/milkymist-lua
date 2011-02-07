@@ -7,7 +7,7 @@
 # Your platform. See PLATS for possible values.
 PLAT= none
 
-CC= gcc
+CC= lm32-rtems4.11-gcc
 CFLAGS= -O2 -Wall $(MYCFLAGS)
 AR= ar rcu
 RANLIB= ranlib
@@ -20,7 +20,7 @@ MYLIBS=
 
 # == END OF USER SETTINGS. NO NEED TO CHANGE ANYTHING BELOW THIS LINE =========
 
-PLATS= aix ansi bsd freebsd generic linux macosx mingw posix solaris
+PLATS= aix ansi bsd freebsd generic linux macosx mingw posix solaris rtems
 
 LUA_A=	liblua.a
 CORE_O=	lapi.o lcode.o ldebug.o ldo.o ldump.o lfunc.o lgc.o llex.o lmem.o \
@@ -35,8 +35,12 @@ LUA_O=	lua.o
 LUAC_T=	luac
 LUAC_O=	luac.o print.o
 
-ALL_O= $(CORE_O) $(LIB_O) $(LUA_O) $(LUAC_O)
-ALL_T= $(LUA_A) $(LUA_T) $(LUAC_T)
+
+LUAM_T=	luam
+LUAM_O=	luam.o print.o
+
+ALL_O= $(CORE_O) $(LIB_O) $(LUA_O) $(LUAC_O) $(LUAM_O)
+ALL_T= $(LUA_A) $(LUA_T) $(LUAC_T) $(LUAM_T)
 ALL_A= $(LUA_A)
 
 default: $(PLAT)
@@ -56,6 +60,9 @@ $(LUA_T): $(LUA_O) $(LUA_A)
 
 $(LUAC_T): $(LUAC_O) $(LUA_A)
 	$(CC) -o $@ $(MYLDFLAGS) $(LUAC_O) $(LUA_A) $(LIBS)
+
+$(LUAM_T): $(LUAM_O) $(LUA_A)
+	$(CC) -o $@ $(MYLDFLAGS) $(LUAM_O) $(LUA_A) $(LIBS)
 
 clean:
 	$(RM) $(ALL_T) $(ALL_O)
@@ -100,6 +107,7 @@ linux:
 
 macosx:
 	$(MAKE) all MYCFLAGS=-DLUA_USE_LINUX MYLIBS="-lreadline"
+
 # use this on Mac OS X 10.3-
 #	$(MAKE) all MYCFLAGS=-DLUA_USE_MACOSX
 
@@ -114,6 +122,9 @@ posix:
 
 solaris:
 	$(MAKE) all MYCFLAGS="-DLUA_USE_POSIX -DLUA_USE_DLOPEN" MYLIBS="-ldl"
+
+rtems:
+	$(MAKE) all MYCFLAGS=-DLUA_RTEMS MYLIBS="-lm -B$(RTEMS_MAKEFILE_PATH)/lib -specs bsp_specs -qrtems"
 
 # list targets that do not create files (but not all makes understand .PHONY)
 .PHONY: all $(PLATS) default o a clean depend echo none
@@ -166,8 +177,11 @@ ltable.o: ltable.c lua.h luaconf.h ldebug.h lstate.h lobject.h llimits.h \
 ltablib.o: ltablib.c lua.h luaconf.h lauxlib.h lualib.h
 ltm.o: ltm.c lua.h luaconf.h lobject.h llimits.h lstate.h ltm.h lzio.h \
   lmem.h lstring.h lgc.h ltable.h
-lua.o: lua.c lua.h luaconf.h lauxlib.h lualib.h
+lua.o:  lua.c lua.h luaconf.h lauxlib.h lualib.h
 luac.o: luac.c lua.h luaconf.h lauxlib.h ldo.h lobject.h llimits.h \
+  lstate.h ltm.h lzio.h lmem.h lfunc.h lopcodes.h lstring.h lgc.h \
+  lundump.h
+luam.o: luam.c lua.h luaconf.h lauxlib.h ldo.h lobject.h llimits.h \
   lstate.h ltm.h lzio.h lmem.h lfunc.h lopcodes.h lstring.h lgc.h \
   lundump.h
 lundump.o: lundump.c lua.h luaconf.h ldebug.h lstate.h lobject.h \
